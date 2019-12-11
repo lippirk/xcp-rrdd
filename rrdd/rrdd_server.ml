@@ -275,18 +275,69 @@ let forget_host_ds _ ~(ds_name : string) : unit =
 	)
 
 let query_possible_dss rrdi =
-	let enabled_dss = Rrd.ds_names rrdi.rrd in
-	let open Ds in
-	let open Data_source in
-	List.map (fun ds -> {
-		name = ds.ds_name;
-		description = ds.ds_description;
-		enabled = List.mem ds.ds_name enabled_dss;
-		standard = ds.ds_default;
-		min = ds.ds_min;
-		max = ds.ds_max;
-		units = ds.ds_units;
-	}) rrdi.dss
+  (* We have data sources coming from different places, so we want the union of these;
+     this happens to be the union of the rrdi.rrd (live) and rrdi.rrd.rdd_dss (archival).
+     This is straighforward, but those two sets of ds have different types,
+     hence we need to coerce them into a common type (this is why we have
+     'description not available', and 'units unknown' etc.).
+     Deciding whether a ds is enabled is also not obvious. If we have a 'live'
+     ds, then it is enabled if it exists in the set rrdi.rrd. If we have an 'archival'
+     ds, then it is enabled if it is also an enabled 'live' ds, otherwise it is
+     disabled.
+   *)
+  let module SSet = Set.Make(String) in
+  let module SMap = Map.Make(String) in
+  let open Ds in
+  let open Data_source in
+
+  let live_sources = rrdi.dss in
+  let archival_sources = rrdi.rrd.rrd_dss in
+
+  let name_to_live_dss =
+    let enabled_names = Rrd.ds_names rrdi.rrd |> SSet.of_list in
+    let is_live_ds_enabled ds = SSet.mem ds.ds_name enabled_names in
+    live_sources |>
+    List.fold_left (fun map ds ->
+      let k = ds.ds_name in
+      let v = { name = ds.ds_name
+              ; description = ds.ds_description
+              ; enabled = is_live_ds_enabled ds
+              ; standard = ds.ds_default
+              ; min= ds.ds_min
+              ; max = ds.ds_max
+              ; units = ds.ds_units
+              }
+      in
+      SMap.add k v map) SMap.empty
+  in
+  let name_to_disabled_dss =
+    archival_sources |>
+    Array.fold_left (fun map ds ->
+      if SMap.mem ds.Rrd.ds_name name_to_live_dss then
+        map
+      else
+        let k = ds.ds_name in
+        let v = { name = ds.ds_name
+                ; description = "description not available"
+                ; enabled = false
+                ; standard = false
+                ; units = "unknown"
+                ; min = ds.ds_min
+                ; max = ds.ds_max
+                }
+        in
+        SMap.add k v map) SMap.empty
+  in
+  let merge_f k mv1 mv2 = match mv1, mv2 with
+  | None, None       -> None
+  | Some v1, None    -> Some v1
+  | None, Some v2    -> D.error "DEBUG disabled key, k: %s" k; Some v2
+  | Some v1, Some v2 -> failwith "impossible: live and archival disabled keys should be disjoint"
+  in
+  SMap.merge merge_f name_to_live_dss name_to_disabled_dss |>
+  SMap.bindings |>
+  List.map snd
+
 
 let query_possible_host_dss _ () : Data_source.t list =
 	Mutex.execute mutex (fun () ->
