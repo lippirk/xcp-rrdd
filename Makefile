@@ -12,6 +12,7 @@ build:
 install:
 	# rrdd
 	install -D _build/install/default/bin/xcp-rrdd $(DESTDIR)$(SBINDIR)/xcp-rrdd
+	install -D -m 644 bin/rrdd/xcp-rrdd.service $(DESTDIR)$(UNITDIR)/xcp-rrdd.service
 	# transport
 	dune install rrd-transport
 	install -D _build/install/default/bin/rrdreader $(DESTDIR)$(BINDIR)/rrdreader
@@ -19,9 +20,16 @@ install:
 	# rrdd-plugin
 	dune install rrdd-plugin
 	# rrdd-plugins
+	## iostat
 	install -D -m 755 _build/install/default/bin/xcp-rrdd-iostat $(DESTDIR)$(LIBEXECDIR)/xcp-rrdd-plugins/xcp-rrdd-iostat
+	install -D -m 644 bin/plugins/rrdp-iostat/xcp-rrdd-iostat.service $(DESTDIR)$(UNITDIR)/xcp-rrdd-iostat.service
+	## squeezed
 	install -D -m 755 _build/install/default/bin/xcp-rrdd-squeezed $(DESTDIR)$(LIBEXECDIR)/xcp-rrdd-plugins/xcp-rrdd-squeezed
+	install -D -m 644 bin/plugins/rrdp-squeezed/xcp-rrdd-squeezed.service $(DESTDIR)$(UNITDIR)/xcp-rrdd-squeezed.service
+	## xenpm
 	install -D -m 755 _build/install/default/bin/xcp-rrdd-xenpm $(DESTDIR)$(LIBEXECDIR)/xcp-rrdd-plugins/xcp-rrdd-xenpm
+	install -D -m 644 bin/plugins/rrdp-xenpm/xcp-rrdd-xenpm.service $(DESTDIR)$(UNITDIR)/xcp-rrdd-xenpm.service
+	## misc
 	install -D -m 644 bin/plugins/bugtool-plugin/rrdd-plugins.xml $(DESTDIR)$(ETCDIR)/bugtool/xcp-rrdd-plugins.xml
 	install -D -m 644 bin/plugins/bugtool-plugin/rrdd-plugins/stuff.xml $(DESTDIR)$(ETCDIR)/bugtool/xcp-rrdd-plugins/stuff.xml
 	install -D -m 755 bin/plugins/scripts/sysconfig-rrdd-plugins $(DESTDIR)/etc/sysconfig/xcp-rrdd-plugins
