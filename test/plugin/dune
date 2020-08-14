@@ -1,14 +1,9 @@
-(executable
+(test
   (name rrdp_dummy)
+  (package rrdd-plugin)
   (libraries
     rrdd-plugin
     xenstore.unix
     xenstore_transport.unix
   )
-)
-
-(alias
-  (name runtest)
-  (deps (:x rrdp_dummy.exe))
-  (action (run %{x} -help))
 )
