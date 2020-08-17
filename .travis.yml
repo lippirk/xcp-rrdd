@@ -8,7 +8,7 @@ install:
 script: bash -ex .travis-docker.sh
 env:
   global:
-    - PINS="xapi-rrdd:. xapi-rrd-transport:. xapi-rrd-transport-utils:. xapi-rrdd-plugin:. rrddump:. rrd-transport:. rrdd-plugin:."
+    - PINS="xapi-rrdd:. xapi-rrd-transport:. xapi-rrd-transport-utils:. xapi-rrdd-plugin:. rrddump:. rrd-transport:. rrdd-plugin:. rrdd-plugins :."
   jobs:
     - PACKAGE="xapi-rrdd"
     - PACKAGE="xapi-rrd-transport"
@@ -17,3 +17,4 @@ env:
     - PACKAGE="rrddump"
     - PACKAGE="rrd-transport"
     - PACKAGE="rrdd-plugin"
+    - PACKAGE="rrdd-plugins"
