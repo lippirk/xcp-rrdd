@@ -1,6 +1,7 @@
 (executable
   (name rrdp_xenpm)
   (public_name xcp-rrdd-xenpm)
+  (package rrdd-plugins)
   (libraries
     rrdd-plugin
     rrdd-plugins.libs

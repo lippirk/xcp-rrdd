@@ -1,6 +1,7 @@
 (executable
   (name rrdp_iostat)
   (public_name xcp-rrdd-iostat)
+  (package rrdd-plugins)
   (libraries
     rrdd-plugin
     rrdd-plugins.libs
